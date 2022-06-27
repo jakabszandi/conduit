@@ -1,0 +1,6 @@
+Posted article titles: 
+-This is a test article.
+Posted articles about: 
+-This article is about nothing.
+Posted article tags: 
+-simpletestarticle

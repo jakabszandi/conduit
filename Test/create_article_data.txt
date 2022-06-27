@@ -1,0 +1,10 @@
+#Title:
+This is a test article.
+#About:
+This article is about nothing.
+#Main:
+I just wanted to show you how simple it is, to create a new article.
+#Tags:
+simple
+test
+article
