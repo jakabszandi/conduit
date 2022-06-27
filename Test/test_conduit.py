@@ -1,3 +1,4 @@
+import csv
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
@@ -40,62 +41,94 @@ class TestConduit(object):
     def test_registration(self):
         main_sign_up_btn = self.browser.find_element_by_xpath('//a[@href="#/register"]')
         main_sign_up_btn.click()
+        # Űrlap elemeinek azonosítása
         username_input = self.browser.find_element_by_xpath('//input[@placeholder="Username"]')
         email_input = self.browser.find_element_by_xpath('//input[@placeholder="Email"]')
         password_input = self.browser.find_element_by_xpath('//input[@placeholder="Password"]')
         sign_up_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
-
+        # Tabulátor megnyomása mezőkben
         username_input.send_keys(Keys.TAB)
         email_input.send_keys(Keys.TAB)
         password_input.send_keys(Keys.TAB)
         sign_up_btn.click()
         time.sleep(1)
+        # Sikertelen regisztráció ellenőrzés
         failed_sign = self.browser.find_element_by_xpath('//div[@class="swal-title"]')
         failed_message = self.browser.find_element_by_xpath('//div[@class="swal-text"]')
         failed_btn = self.browser.find_element_by_xpath('//button[@class="swal-button swal-button--confirm"]')
+        # Sikertelen regisztrációs szöveg megjelenése
         assert failed_sign.text == "Registration failed!"
         assert failed_message.text == "Username field required."
         failed_btn.click()
 
     # 03 Bejelentkezés tesztelése pozitív ágon
     def test_login(self):
+        # Regisztráció pozitív ágon
+        main_sign_up_btn = self.browser.find_element_by_xpath('//a[@href="#/register"]')
+        main_sign_up_btn.click()
+        # Űrlap elemeinek azonosítása
+        username_input = self.browser.find_element_by_xpath('//input[@placeholder="Username"]')
+        email_input = self.browser.find_element_by_xpath('//input[@placeholder="Email"]')
+        password_input = self.browser.find_element_by_xpath('//input[@placeholder="Password"]')
+        sign_up_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
+        # Adatok megadása
+        username_input.send_keys(test_user["username"])
+        email_input.send_keys(test_user["email"])
+        password_input.send_keys(test_user["password"])
+        sign_up_btn.click()
+        success_sign = self.browser.find_element_by_xpath('//div[@class="swal-text"]')
+        success_btn = self.browser.find_element_by_xpath('//button[@class="swal-button swal-button--confirm"]')
+        assert success_sign.text == "Your registration was successful!"
+        success_btn.click()
+        time.sleep(1)
+        # Bejelentkezés
         main_sign_in_btn = self.browser.find_element_by_xpath('//a[@href="#/login"]')
         main_sign_in_btn.click()
+        # Űrlap elemeinek azonosítása
         email_input = self.browser.find_element_by_xpath('//input[@placeholder="Email"]')
         password_input = self.browser.find_element_by_xpath('//input[@placeholder="Password"]')
         sign_in_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
+        # Adatok megadása
         email_input.send_keys(test_user["email"])
         password_input.send_keys(test_user["password"])
         sign_in_btn.click()
         time.sleep(2)
+        # Username megjelenésének ellenőrzése
         nav_bar = self.browser.find_element_by_xpath('//nav')
         assert test_user["username"] in nav_bar.text
 
     # 04 Adatok listázása
     def test_listing(self):
         login(self)
+        # Article címek azonosítása
         article_titles = self.browser.find_elements_by_xpath('//h1')
         page_title = self.browser.find_element_by_xpath('//h1[@class="logo-font"]')
+        # Üres lista létrehozása
         article_list = []
         for title in article_titles:
             if title.text != page_title.text:
                 article_list.append(title.text)
-        assert len(article_list) != 0
+        # Ellenőrizzük, hogy a lista nem üres
+        assert len(article_list) > 0
 
     # 05 Több oldalas lista bejárása
     def test_paginator(self):
         login(self)
+        # Lapozó gombok azonosítása
         page_html = self.browser.find_element_by_xpath('//html')
         page_html.send_keys(Keys.END)
         page_list = self.browser.find_elements_by_xpath('//a[@class="page-link"]')
+        # Gombok bejárása for ciklussal
         for page in page_list:
             page.click()
             opened_page = self.browser.find_element_by_xpath('//li[@class="page-item active"]')
+            # Ellenőrzés
             assert page.text == opened_page.text
 
     # 06 Új adat bevitele
     def test_new_article(self):
         login(self)
+        # Elemek azonosítása
         new_article_btn = self.browser.find_element_by_xpath('//a[@href="#/editor"]')
         new_article_btn.click()
         time.sleep(1)
@@ -121,6 +154,24 @@ class TestConduit(object):
         assert new_title.text == article_content[1].rstrip()
 
     # 07 Ismételt és sorozatos adatbevitel forrásból
+    def test_write_comment(self):
+        login(self)
+        selected_article = self.browser.find_element_by_xpath('//a[@href="#/articles/lorem-ipsum-dolor-sit-amet"]/h1')
+        selected_article.click()
+        time.sleep(1)
+        comment_area = self.browser.find_element_by_xpath('//textarea[@placeholder="Write a comment..."]')
+        post_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-sm btn-primary"]')
+        with open('Test/comments.csv', 'r', encoding='UTF8') as comments:
+            table = csv.reader(comments)
+            for row in table:
+                comment_area.send_keys(row)
+                post_btn.click()
+                time.sleep(1)
+        posted_comment = self.browser.find_elements_by_xpath('//p[@class="card-text"]')
+        posted_comm_list = []
+        for comment in posted_comment:
+            posted_comm_list.append(comment.text)
+        assert posted_comm_list[2] == "This is a test comment."
 
     # 08 Meglévő adat módosítása
     def test_modifying(self):
@@ -130,11 +181,13 @@ class TestConduit(object):
         time.sleep(2)
         picture_area = self.browser.find_element_by_xpath('//input[@placeholder="URL of profile picture"]')
         update_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
+        # Új kép URL megadása
         picture_area.clear()
         picture_area.send_keys(
             "https://www.testing-whiz.com/media/2943/test-automation-accelerating-towards-the-nextgen-software-testing.jpg")
         update_btn.click()
         time.sleep(2)
+        # Módosítás sikerességének ellenőrzése
         success_sign = self.browser.find_element_by_xpath('//div[@class="swal-title"]')
         success_btn = self.browser.find_element_by_xpath('//button[@class="swal-button swal-button--confirm"]')
         assert success_sign.is_displayed
@@ -143,12 +196,13 @@ class TestConduit(object):
     # 09 Adatok lementése felületről
     def test_save_data(self):
         login(self)
+        # Profil megnyitása
         user_profile_page = self.browser.find_element_by_xpath('//li[@class="nav-item"]/a[@href="#/@testUser0327/"]')
         user_profile_page.click()
         time.sleep(2)
         article_title = self.browser.find_elements_by_xpath('//a[@href="#/articles/this-is-a-test-article"]/h1')
         article_about = self.browser.find_elements_by_xpath('//a[@href="#/articles/this-is-a-test-article"]/p')
-        tags = self.browser.find_elements_by_xpath('//div[@class="tag-list"]')
+        # collected_articles.txt beolvasása és írása
         with open('Test/collected_articles.txt', 'w', encoding='UTF8') as article_data:
             article_data.write('Posted article title: \n')
             for title in article_title:
@@ -156,9 +210,10 @@ class TestConduit(object):
             article_data.write('Posted article about: \n')
             for about in article_about:
                 article_data.write('-' + about.text + '\n')
-            article_data.write('Posted article tags: \n')
-            for tag in tags:
-                article_data.write('-' + tag.text + '\n')
+        # Ellenőrzés
+        with open('Test/collected_articles.txt', 'r', encoding='UTF8') as collected_data:
+            data_content = collected_data.readlines()
+        assert data_content[1].rstrip() == "-This is a test article."
 
     # 10 Adat törlése
     def test_delete_data(self):
@@ -171,10 +226,9 @@ class TestConduit(object):
         articles_list.click()
         time.sleep(2)
         delete_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-outline-danger btn-sm"]')
-        # delete_sign = self.browser.find_element_by_xpath('//div[@class="swal-text"]')
         delete_btn.click()
-        # assert delete_sign.is_displayed()
-        # assert delete_sign.text == "Deleted the article. Going home..."
+        time.sleep(2)
+        assert self.browser.current_url == "http://localhost:1667/#/"
 
     # 11 Kijelentkezés
     def test_logout(self):
