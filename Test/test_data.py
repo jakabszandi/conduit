@@ -1,6 +1,6 @@
 test_user = {
-    'username': 'testUser0327',
-    'email': 'test_user0327@gmail.com',
-    'password': 'Standard.pwd1'
+    'username': 'testUser327',
+    'email': 'test_user327@gmail.com',
+    'password': 'Standard.pwd2'
 }
 

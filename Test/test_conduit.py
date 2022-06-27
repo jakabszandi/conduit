@@ -4,6 +4,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
 from test_data import test_user
 from test_functions import login
 
@@ -64,38 +65,41 @@ class TestConduit(object):
     # 03 Bejelentkezés tesztelése pozitív ágon
     def test_login(self):
         # Regisztráció pozitív ágon
-        main_sign_up_btn = self.browser.find_element_by_xpath('//a[@href="#/register"]')
-        main_sign_up_btn.click()
-        # Űrlap elemeinek azonosítása
-        username_input = self.browser.find_element_by_xpath('//input[@placeholder="Username"]')
-        email_input = self.browser.find_element_by_xpath('//input[@placeholder="Email"]')
-        password_input = self.browser.find_element_by_xpath('//input[@placeholder="Password"]')
-        sign_up_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
-        # Adatok megadása
-        username_input.send_keys(test_user["username"])
-        email_input.send_keys(test_user["email"])
-        password_input.send_keys(test_user["password"])
-        sign_up_btn.click()
-        success_sign = self.browser.find_element_by_xpath('//div[@class="swal-text"]')
-        success_btn = self.browser.find_element_by_xpath('//button[@class="swal-button swal-button--confirm"]')
-        assert success_sign.text == "Your registration was successful!"
-        success_btn.click()
-        time.sleep(1)
-        # Bejelentkezés
-        main_sign_in_btn = self.browser.find_element_by_xpath('//a[@href="#/login"]')
-        main_sign_in_btn.click()
-        # Űrlap elemeinek azonosítása
-        email_input = self.browser.find_element_by_xpath('//input[@placeholder="Email"]')
-        password_input = self.browser.find_element_by_xpath('//input[@placeholder="Password"]')
-        sign_in_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
-        # Adatok megadása
-        email_input.send_keys(test_user["email"])
-        password_input.send_keys(test_user["password"])
-        sign_in_btn.click()
-        time.sleep(2)
-        # Username megjelenésének ellenőrzése
-        nav_bar = self.browser.find_element_by_xpath('//nav')
-        assert test_user["username"] in nav_bar.text
+        try:
+            main_sign_up_btn = self.browser.find_element_by_xpath('//a[@href="#/register"]')
+            main_sign_up_btn.click()
+            # Űrlap elemeinek azonosítása
+            username_input = self.browser.find_element_by_xpath('//input[@placeholder="Username"]')
+            email_input = self.browser.find_element_by_xpath('//input[@placeholder="Email"]')
+            password_input = self.browser.find_element_by_xpath('//input[@placeholder="Password"]')
+            sign_up_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
+            # Adatok megadása
+            username_input.send_keys(test_user["username"])
+            email_input.send_keys(test_user["email"])
+            password_input.send_keys(test_user["password"])
+            sign_up_btn.click()
+            time.sleep(2)
+            success_sign = self.browser.find_element_by_xpath('//div[@class="swal-text"]')
+            assert success_sign.is_displayed()
+        except NoSuchElementException:
+            success_btn = self.browser.find_element_by_xpath('//button[@class="swal-button swal-button--confirm"]')
+            success_btn.click()
+            time.sleep(1)
+            # Bejelentkezés
+            main_sign_in_btn = self.browser.find_element_by_xpath('//a[@href="#/login"]')
+            main_sign_in_btn.click()
+            # Űrlap elemeinek azonosítása
+            email_input = self.browser.find_element_by_xpath('//input[@placeholder="Email"]')
+            password_input = self.browser.find_element_by_xpath('//input[@placeholder="Password"]')
+            sign_in_btn = self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-primary pull-xs-right"]')
+            # Adatok megadása
+            email_input.send_keys(test_user["email"])
+            password_input.send_keys(test_user["password"])
+            sign_in_btn.click()
+            time.sleep(2)
+            # Username megjelenésének ellenőrzése
+            nav_bar = self.browser.find_element_by_xpath('//nav')
+            assert test_user["username"] in nav_bar.text
 
     # 04 Adatok listázása
     def test_listing(self):
