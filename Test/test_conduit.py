@@ -201,7 +201,7 @@ class TestConduit(object):
     def test_save_data(self):
         login(self)
         # Profil megnyitása
-        user_profile_page = self.browser.find_element_by_xpath('//li[@class="nav-item"]/a[@href="#/@testUser0327/"]')
+        user_profile_page = self.browser.find_element_by_xpath('//li[@class="nav-item"]/a[@href="#/@testUser326/"]')
         user_profile_page.click()
         time.sleep(2)
         article_title = self.browser.find_elements_by_xpath('//a[@href="#/articles/this-is-a-test-article"]/h1')
@@ -222,7 +222,7 @@ class TestConduit(object):
     # 10 Adat törlése
     def test_delete_data(self):
         login(self)
-        user_profile_page = self.browser.find_element_by_xpath('//li[@class="nav-item"]/a[@href="#/@testUser0327/"]')
+        user_profile_page = self.browser.find_element_by_xpath('//li[@class="nav-item"]/a[@href="#/@testUser326/"]')
         user_profile_page.click()
         time.sleep(2)
         articles_list = self.browser.find_element_by_xpath(
@@ -237,7 +237,7 @@ class TestConduit(object):
     # 11 Kijelentkezés
     def test_logout(self):
         login(self)
-        profile_sign = self.browser.find_element_by_xpath('//a[@href="#/@testUser0327/"]')
+        profile_sign = self.browser.find_element_by_xpath('//a[@href="#/@testUser326/"]')
         assert profile_sign.text == test_user["username"]
         logout_btn = self.browser.find_element_by_xpath('//a[@active-class="active"]')
         logout_btn.click()
