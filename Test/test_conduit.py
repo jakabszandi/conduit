@@ -14,7 +14,7 @@ class TestConduit(object):
         browser_options = Options()
         browser_options.headless = True
         self.browser = webdriver.Chrome(ChromeDriverManager().install(), options=browser_options)
-        URL = "http://localhost:1667"
+        URL = "http://localhost:1667/"
         self.browser.get(URL)
 
     def teardown(self):
